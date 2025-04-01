@@ -1,10 +1,11 @@
-# 🧪 Lab nâng cao: Docker Compose - Fullstack App (React + Flask + MySQL + Nginx)
+# 🧪 Lab nâng cao: Docker Compose - Tự viết file cấu hình cho hệ thống Fullstack
 
 ## 🎯 Mục tiêu
-- Deploy ứng dụng fullstack gồm frontend React, backend Flask, database MySQL.
-- Reverse proxy qua nginx.
-- Mount volume để reload code và lưu dữ liệu bền vững.
-- Sử dụng biến môi trường qua file `.env`.
+- Học cách tự viết file `docker-compose.yml` cho ứng dụng gồm:
+  - Frontend React
+  - Backend Flask
+  - Database MySQL
+  - Reverse proxy NGINX
 
 ---
 
@@ -16,7 +17,7 @@
 [nginx reverse proxy]
    ├── /api/* → backend (Flask)
    └── /     → frontend (React)
-   
+
 [backend] → [MySQL]
 ```
 
@@ -25,40 +26,65 @@
 ## 📁 Cấu trúc thư mục
 
 ```
-docker-compose-full-lab/
+200lab-lab2/
 ├── backend/
 ├── frontend/
 ├── nginx/
 ├── .env
-└── docker-compose.yml
+└── (bạn sẽ tự tạo docker-compose.yml)
 ```
 
 ---
 
-## 🚀 Hướng dẫn chạy lab
+## 🧠 Yêu cầu học viên
 
-### 1. Clone hoặc giải nén source code
+Tự viết file `docker-compose.yml` với các yêu cầu sau:
 
-```bash
-cd docker-compose-full-lab
-```
+### 1. `frontend` service
+- Build từ thư mục `./frontend`
+- Gắn volume để có thể sửa code
+- Nối mạng với các service khác
 
-### 2. Khởi động hệ thống
+### 2. `backend` service
+- Build từ thư mục `./backend`
+- Mount volume source code
+- Truyền biến môi trường `FLASK_ENV=development`
+- `depends_on` với service `db`
+
+### 3. `db` service
+- Sử dụng image `mysql:5.7`
+- Dùng biến môi trường trong file `.env` để cấu hình:
+  - `MYSQL_ROOT_PASSWORD`
+  - `MYSQL_DATABASE`
+- Mount volume để lưu trữ dữ liệu
+
+### 4. `nginx` service
+- Dùng image `nginx:alpine`
+- Mount file cấu hình `./nginx/default.conf` vào đúng vị trí NGINX
+- Publish port 80
+- `depends_on`: frontend và backend
+
+### 5. Tạo network dùng chung tên `lab-net`
+### 6. Tạo volume tên `db_data` để dùng cho MySQL
+
+---
+
+## 📌 Gợi ý
+
+Bạn có thể xem lại cú pháp mẫu Compose từ tài liệu hoặc buổi học trước:
+- `build`, `ports`, `volumes`, `environment`, `depends_on`, `networks`
+
+---
+
+## 🚀 Chạy thử sau khi hoàn tất
 
 ```bash
 docker compose up --build
 ```
 
-### 3. Truy cập
-
-- Frontend: http://localhost
-- API Backend: http://localhost/api
-
-### 4. Kiểm tra dữ liệu từ React → Flask → MySQL
-
 ---
 
-## 🧹 Dọn dẹp sau khi xong lab
+## 🧹 Dọn dẹp sau khi xong
 
 ```bash
 docker compose down -v
@@ -68,6 +94,5 @@ docker compose down -v
 
 ## ✅ Kết quả mong đợi
 
-- Giao diện React gọi API và hiển thị dữ liệu từ MySQL.
-- Có thể sửa code backend/frontend và thấy thay đổi ngay (volume).
-- MySQL giữ được dữ liệu khi container khởi động lại.
+- Truy cập `http://localhost` → thấy giao diện React
+- React gọi API `http://localhost/api` → hiển thị nội dung từ Flask → kết nối MySQL
