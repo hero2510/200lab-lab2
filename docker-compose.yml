@@ -1,0 +1,51 @@
+services:
+  frontend:
+    build: 
+      context: ./frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - lab-net
+
+  backend:
+    build: 
+      context: ./backend
+    volumes:
+      - ./backend:/app
+    environment:
+      - FLASK_ENV=development
+    depends_on:
+      - db
+    networks:
+      - lab-net
+
+  db:
+    image: mysql:8.0
+    platform: linux/amd64
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - lab-net
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - lab-net
+
+networks:
+  lab-net:
+    driver: bridge
+
+volumes:
+  db_data:
